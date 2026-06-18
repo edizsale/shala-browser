@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   maximizeWindow: () => ipcRenderer.send('window-maximize'),
   closeWindow: () => ipcRenderer.send('window-close'),
   isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+  getPlatform: () => ipcRenderer.invoke('get-platform'),
 
   // Pencere durumu
   onWindowStateChanged: (callback) => ipcRenderer.on('window-state-changed', (e, state) => callback(state)),

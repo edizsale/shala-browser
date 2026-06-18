@@ -97,3 +97,4 @@ ipcMain.on('window-maximize', () => {
 ipcMain.on('window-close', () => mainWindow.close());
 
 ipcMain.handle('window-is-maximized', () => mainWindow.isMaximized());
+ipcMain.handle('get-platform', () => process.platform);

@@ -30,9 +30,13 @@ const findCount = document.getElementById('findCount');
 const findPrev = document.getElementById('findPrev');
 const findNext = document.getElementById('findNext');
 const findClose = document.getElementById('findClose');
-const minimizeBtn = document.getElementById('minimizeBtn');
-const maximizeBtn = document.getElementById('maximizeBtn');
-const closeBtn = document.getElementById('closeBtn');
+// Pencere kontrolleri — platforma göre iki ayrı set (Mac/Linux solda, Windows sağda)
+const minimizeBtnMac = document.getElementById('minimizeBtnMac');
+const maximizeBtnMac = document.getElementById('maximizeBtnMac');
+const closeBtnMac = document.getElementById('closeBtnMac');
+const minimizeBtnWin = document.getElementById('minimizeBtnWin');
+const maximizeBtnWin = document.getElementById('maximizeBtnWin');
+const closeBtnWin = document.getElementById('closeBtnWin');
 const aboutModal = document.getElementById('aboutModal');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
 
@@ -579,10 +583,14 @@ starBtn.addEventListener('click', () => {
   updateStarState();
 });
 
-// Window controls
-minimizeBtn.addEventListener('click', () => window.electronAPI.minimizeWindow());
-maximizeBtn.addEventListener('click', () => window.electronAPI.maximizeWindow());
-closeBtn.addEventListener('click', () => window.electronAPI.closeWindow());
+// Window controls — her iki set de aynı IPC fonksiyonlarını çağırır
+minimizeBtnMac.addEventListener('click', () => window.electronAPI.minimizeWindow());
+maximizeBtnMac.addEventListener('click', () => window.electronAPI.maximizeWindow());
+closeBtnMac.addEventListener('click', () => window.electronAPI.closeWindow());
+
+minimizeBtnWin.addEventListener('click', () => window.electronAPI.minimizeWindow());
+maximizeBtnWin.addEventListener('click', () => window.electronAPI.maximizeWindow());
+closeBtnWin.addEventListener('click', () => window.electronAPI.closeWindow());
 
 // About modal
 aboutBtn.addEventListener('click', () => aboutModal.classList.add('show'));
@@ -709,20 +717,37 @@ window.electronAPI.onZoomReset(() => {
 });
 
 window.electronAPI.onWindowStateChanged((state) => {
-  const icon = maximizeBtn.querySelector('svg');
+  // macOS/Linux traffic-light ikonu (diagonal ok stili)
+  const iconMac = maximizeBtnMac.querySelector('svg');
   if (state === 'maximized') {
-    // Geri yükle ikonu — içe bakan oklar
-    icon.innerHTML = '<path d="M3 2.3v1.4H1.6M3 3.7L1 1.7M7 7.7V6.3h1.4M7 6.3L9 8.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+    iconMac.innerHTML = '<path d="M3 2.3v1.4H1.6M3 3.7L1 1.7M7 7.7V6.3h1.4M7 6.3L9 8.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
   } else {
-    // Genişlet ikonu — dışa bakan oklar
-    icon.innerHTML = '<path d="M2 5h6M5 2v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" transform="rotate(45 5 5)"/>';
+    iconMac.innerHTML = '<path d="M2 5h6M5 2v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" transform="rotate(45 5 5)"/>';
+  }
+
+  // Windows klasik ikonu (tek kare ↔ üst üste binmiş çift kare)
+  const iconWin = maximizeBtnWin.querySelector('svg');
+  if (state === 'maximized') {
+    iconWin.innerHTML = '<rect x="2.5" y="1.5" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1"/><path d="M1.5 3.5h-1v6h6v-1" fill="none" stroke="currentColor" stroke-width="1"/>';
+  } else {
+    iconWin.innerHTML = '<rect x="1.5" y="1.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/>';
   }
 });
 
 // ============================================
 // INIT
 // ============================================
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  // Platform tespiti — Windows'ta pencere butonları sağa, kare stile geçer
+  try {
+    const platform = await window.electronAPI.getPlatform();
+    if (platform === 'win32') {
+      document.body.classList.add('platform-win32');
+    }
+  } catch (e) {
+    // getPlatform desteklenmiyorsa varsayılan (macOS/Linux) görünüm kalır
+  }
+
   const restored = tabManager.restoreSession();
   if (!restored) {
     tabManager.createTab(DEFAULT_URL);

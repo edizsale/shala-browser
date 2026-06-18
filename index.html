@@ -10,19 +10,20 @@
 
   <!-- TITLE BAR / SEKME ÇUBUĞU -->
   <div class="titlebar" id="titlebar">
-    <div class="window-controls">
-      <button id="closeBtn" class="traffic-light tl-close" title="Kapat">
+    <!-- macOS / Linux: traffic-light butonlar solda -->
+    <div class="window-controls wc-left" id="wcLeft">
+      <button id="closeBtnMac" class="traffic-light tl-close" title="Kapat">
         <svg viewBox="0 0 10 10" width="6" height="6"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
       </button>
-      <button id="minimizeBtn" class="traffic-light tl-min" title="Küçült">
+      <button id="minimizeBtnMac" class="traffic-light tl-min" title="Küçült">
         <svg viewBox="0 0 10 10" width="6" height="6"><path d="M1 5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
       </button>
-      <button id="maximizeBtn" class="traffic-light tl-max" title="Genişlet">
+      <button id="maximizeBtnMac" class="traffic-light tl-max" title="Genişlet">
         <svg viewBox="0 0 10 10" width="6" height="6"><path d="M2 5h6M5 2v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" transform="rotate(45 5 5)"/></svg>
       </button>
     </div>
 
-    <div class="titlebar-spacer"></div>
+    <div class="titlebar-spacer" id="titlebarSpacerLeft"></div>
 
     <div class="tab-strip" id="tabStrip">
       <!-- Sekmeler buraya dinamik olarak eklenecek -->
@@ -33,6 +34,19 @@
     </button>
 
     <div class="titlebar-drag-region"></div>
+
+    <!-- Windows: kare/dikdörtgen butonlar sağda -->
+    <div class="window-controls wc-win" id="wcWin">
+      <button id="minimizeBtnWin" class="winbtn" title="Küçült">
+        <svg viewBox="0 0 10 10" width="10" height="10"><path d="M1 5h8" stroke="currentColor" stroke-width="1" stroke-linecap="square"/></svg>
+      </button>
+      <button id="maximizeBtnWin" class="winbtn" title="Genişlet">
+        <svg viewBox="0 0 10 10" width="10" height="10"><rect x="1.5" y="1.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button id="closeBtnWin" class="winbtn winbtn-close" title="Kapat">
+        <svg viewBox="0 0 10 10" width="10" height="10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.1"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- ARAÇ ÇUBUĞU -->
