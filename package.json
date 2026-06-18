@@ -6,12 +6,89 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --inspect=5858"
+    "dev": "electron . --inspect=5858",
+    "dist:win": "electron-builder --win nsis",
+    "dist:linux": "electron-builder --linux deb AppImage",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:all": "electron-builder --win nsis --linux deb AppImage --mac dmg"
   },
   "keywords": ["electron", "browser", "shala", "dardania"],
-  "author": "Shala",
+  "author": {
+    "name": "Shala",
+    "email": "edizshala@example.com"
+  },
   "license": "MIT",
   "devDependencies": {
-    "electron": "^27.0.0"
+    "electron": "^27.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.dardania.shalabrowser",
+    "productName": "SHALA Browser",
+    "copyright": "Copyright © 2025 Dardania Kingdom",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "newtab.html",
+      "styles.css",
+      "!build/install-desktop-entry.sh"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SHALA Browser",
+      "artifactName": "SHALA-Browser-Setup-${version}.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Network",
+      "executableName": "shala-browser",
+      "artifactName": "shala-browser_${version}_${arch}.${ext}"
+    },
+    "deb": {
+      "depends": ["libgtk-3-0", "libnotify4", "libnss3", "libxss1", "libxtst6", "xdg-utils"]
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.productivity",
+      "identity": null
+    },
+    "dmg": {
+      "artifactName": "SHALA-Browser-${version}-${arch}.${ext}"
+    }
   }
 }
