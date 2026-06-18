@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHALA Browser</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- TITLE BAR / SEKME ÇUBUĞU -->
+  <div class="titlebar" id="titlebar">
+    <div class="window-controls">
+      <button id="closeBtn" class="traffic-light tl-close" title="Kapat">
+        <svg viewBox="0 0 10 10" width="6" height="6"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <button id="minimizeBtn" class="traffic-light tl-min" title="Küçült">
+        <svg viewBox="0 0 10 10" width="6" height="6"><path d="M1 5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <button id="maximizeBtn" class="traffic-light tl-max" title="Genişlet">
+        <svg viewBox="0 0 10 10" width="6" height="6"><path d="M2 5h6M5 2v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" transform="rotate(45 5 5)"/></svg>
+      </button>
+    </div>
+
+    <div class="titlebar-spacer"></div>
+
+    <div class="tab-strip" id="tabStrip">
+      <!-- Sekmeler buraya dinamik olarak eklenecek -->
+    </div>
+
+    <button class="new-tab-btn" id="newTabBtn" title="Yeni Sekme (Ctrl+T)">
+      <svg viewBox="0 0 16 16" width="14" height="14"><path fill="currentColor" d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+
+    <div class="titlebar-drag-region"></div>
+  </div>
+
+  <!-- ARAÇ ÇUBUĞU -->
+  <div class="toolbar">
+    <div class="nav-buttons">
+      <button id="backBtn" class="btn-nav" title="Geri (Alt+Sol)" disabled>
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button id="forwardBtn" class="btn-nav" title="İleri (Alt+Sağ)" disabled>
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <button id="reloadBtn" class="btn-nav" title="Yenile (F5)">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-2.6-6.4M21 4v5h-5"/></svg>
+      </button>
+      <button id="homeBtn" class="btn-nav" title="Ana Sayfa (Ctrl+H)">
+        <svg viewBox="0 0 24 24" width="17" height="17"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>
+      </button>
+    </div>
+
+    <div class="address-bar-container">
+      <div class="security-indicator" id="securityIndicator" title="Güvenli bağlantı">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/></svg>
+      </div>
+      <input
+        type="text"
+        id="addressBar"
+        class="address-bar"
+        placeholder="Bir adres yazın veya arama yapın"
+        autocomplete="off"
+        spellcheck="false"
+      >
+      <button class="star-btn" id="starBtn" title="Yer imine ekle">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 2.5l3 6.5 7 .9-5 5 1.3 7-6.3-3.5L5.7 22l1.3-7-5-5 7-.9z"/></svg>
+      </button>
+      <button class="btn-go" id="goBtn" title="Git">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="toolbar-actions">
+      <button id="findBtn" class="btn-icon" title="Sayfada Bul (Ctrl+F)">
+        <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button id="aboutBtn" class="btn-icon" title="SHALA Browser Hakkında">
+        <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- YER İMLERİ ÇUBUĞU -->
+  <div class="bookmark-bar" id="bookmarkBar">
+    <span class="bookmark-bar-empty" id="bookmarkBarEmpty">⚜ Yer imlerin burada görünecek — sayfayı yıldızla ekle</span>
+  </div>
+
+  <!-- BULMA ÇUBUĞU (gizli, Ctrl+F ile açılır) -->
+  <div class="find-bar" id="findBar">
+    <input type="text" id="findInput" class="find-input" placeholder="Sayfada bul...">
+    <span class="find-count" id="findCount">0/0</span>
+    <button class="find-nav" id="findPrev" title="Önceki">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M18 15l-6-6-6 6"/></svg>
+    </button>
+    <button class="find-nav" id="findNext" title="Sonraki">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <button class="find-close" id="findClose">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </div>
+
+  <!-- WEBVIEW KONTEYNER -->
+  <div class="webview-container" id="webviewContainer">
+    <!-- Webview'lar dinamik olarak buraya eklenecek -->
+  </div>
+
+  <!-- DURUM ÇUBUĞU -->
+  <div class="statusbar" id="statusbar">
+    <span id="statusText"></span>
+  </div>
+
+  <!-- HAKKINDA MODAL -->
+  <div id="aboutModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-crest">⚜</div>
+      <h2>SHALA Browser</h2>
+      <p class="modal-version">Sürüm 2.0 — Dardania Royal Edition</p>
+      <div class="modal-divider"></div>
+      <p>Dardania Krallığı'nın resmi web tarayıcısı.</p>
+      <p class="modal-meta"><strong>Motor:</strong> Chromium · Electron</p>
+      <p class="modal-meta"><strong>Tasarım:</strong> Shala</p>
+      <div class="modal-divider"></div>
+      <p class="modal-footer-text">Kurulmuş: 2025 · Krallık Tarihi: 1000. Yıl</p>
+      <button class="modal-close-btn" id="modalCloseBtn">Kapat</button>
+    </div>
+  </div>
+
+  <!-- YENİ SEKME SAYFASI ŞABLONU (webview içine yüklenecek data URL için kullanılmıyor, referans) -->
+
+  <script src="renderer.js"></script>
+</body>
+</html>

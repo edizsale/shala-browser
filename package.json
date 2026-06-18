@@ -1,0 +1,17 @@
+{
+  "name": "shala-browser",
+  "productName": "SHALA Browser",
+  "version": "2.0.0",
+  "description": "SHALA Browser - Dardania Kingdom Royal Web Browser",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --inspect=5858"
+  },
+  "keywords": ["electron", "browser", "shala", "dardania"],
+  "author": "Shala",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0"
+  }
+}

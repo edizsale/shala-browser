@@ -1,0 +1,775 @@
+/* ============================================
+   SHALA BROWSER — Dardania Royal Edition
+   ============================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  /* Palet */
+  --gold: #d4af37;
+  --gold-bright: #f0d77a;
+  --gold-dim: #8a7654;
+  --gold-deep: #a8842c;
+
+  --bg-0: #0e0b08;   /* en koyu */
+  --bg-1: #161310;   /* titlebar */
+  --bg-2: #1d1814;   /* toolbar */
+  --bg-3: #261f18;   /* paneller / aktif sekme */
+  --bg-4: #322920;   /* hover / inputlar */
+
+  --border: rgba(212, 175, 55, 0.22);
+  --border-bright: rgba(212, 175, 55, 0.5);
+  --border-dim: rgba(212, 175, 55, 0.1);
+
+  --text: #e8d9b5;
+  --text-dim: #9c8a64;
+  --text-faint: #6b5d44;
+
+  --danger: #c0504d;
+  --danger-bright: #e07a77;
+
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 14px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-fast: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg-0);
+  color: var(--text);
+  user-select: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(212,175,55,0.35);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.55); }
+
+/* ============================================
+   TITLEBAR + SEKME ÇUBUĞU
+   ============================================ */
+
+.titlebar {
+  height: 44px;
+  min-height: 44px;
+  background: linear-gradient(180deg, var(--bg-1) 0%, #110e0a 100%);
+  border-bottom: 1px solid var(--border-dim);
+  display: flex;
+  align-items: center;
+  -webkit-app-region: drag;
+  position: relative;
+  z-index: 50;
+}
+
+.titlebar-spacer {
+  width: 6px;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.tab-strip {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-app-region: no-drag;
+  scrollbar-width: none;
+}
+.tab-strip::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+  max-width: 220px;
+  height: 36px;
+  margin: 6px 2px 0 0;
+  padding: 0 8px 0 12px;
+  border-radius: 9px 9px 0 0;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.18s var(--ease-fast), color 0.18s var(--ease-fast);
+  flex-shrink: 0;
+}
+
+.tab:hover {
+  background: rgba(212,175,55,0.08);
+  color: var(--text);
+}
+
+.tab.active {
+  background: var(--bg-3);
+  color: var(--gold-bright);
+  box-shadow: 0 -1px 0 var(--border) inset, 0 -2px 6px rgba(0,0,0,0.25) inset;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright), var(--gold-deep));
+  border-radius: 2px;
+}
+
+.tab-favicon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-dim);
+  opacity: 0.85;
+}
+
+.tab-favicon svg { width: 100%; height: 100%; }
+
+.tab-favicon.loading {
+  animation: tab-spin 0.9s linear infinite;
+}
+
+@keyframes tab-spin {
+  to { transform: rotate(360deg); }
+}
+
+.tab-title {
+  flex: 1;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.1px;
+}
+
+.tab-close {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.tab:hover .tab-close,
+.tab.active .tab-close { opacity: 0.7; }
+
+.tab-close:hover {
+  background: rgba(192, 80, 77, 0.35);
+  color: #ffb3b0;
+  opacity: 1 !important;
+}
+
+.tab-close svg { width: 9px; height: 9px; }
+
+.new-tab-btn {
+  width: 30px;
+  height: 30px;
+  margin: 7px 6px 0 4px;
+  border-radius: 7px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-app-region: no-drag;
+  transition: background 0.15s, color 0.15s;
+}
+.new-tab-btn:hover {
+  background: rgba(212,175,55,0.12);
+  color: var(--gold-bright);
+}
+
+.titlebar-drag-region {
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding-left: 14px;
+  -webkit-app-region: no-drag;
+  flex-shrink: 0;
+}
+
+.traffic-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: filter 0.12s var(--ease-fast), transform 0.12s var(--ease-fast);
+}
+
+.traffic-light svg {
+  opacity: 0;
+  transition: opacity 0.12s var(--ease-fast);
+}
+
+.window-controls:hover .traffic-light svg {
+  opacity: 1;
+}
+
+.tl-close {
+  background: #ec6a5f;
+  color: #4d0f0a;
+}
+.tl-min {
+  background: #f4bd4f;
+  color: #5c4006;
+}
+.tl-max {
+  background: #61c454;
+  color: #1c4a13;
+}
+
+.window-controls:hover .tl-close { background: #ec6a5f; }
+.window-controls:hover .tl-min { background: #f4bd4f; }
+.window-controls:hover .tl-max { background: #61c454; }
+
+.traffic-light:active {
+  filter: brightness(0.85);
+  transform: scale(0.94);
+}
+
+/* Pencere odakta değilken (blur) traffic light'lar soluklaşır — macOS hissi */
+body.window-blurred .traffic-light {
+  background: #4a443c !important;
+}
+body.window-blurred .traffic-light svg { opacity: 0 !important; }
+
+/* ============================================
+   ARAÇ ÇUBUĞU
+   ============================================ */
+
+.toolbar {
+  height: 52px;
+  min-height: 52px;
+  background: linear-gradient(180deg, var(--bg-2) 0%, #19140f 100%);
+  border-bottom: 1px solid var(--border-dim);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 10px;
+  position: relative;
+  z-index: 40;
+}
+
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.btn-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s var(--ease-fast), color 0.15s, transform 0.12s;
+}
+
+.btn-nav:hover:not(:disabled) {
+  background: rgba(212,175,55,0.12);
+  color: var(--gold-bright);
+}
+
+.btn-nav:active:not(:disabled) {
+  transform: scale(0.92);
+  background: rgba(212,175,55,0.2);
+}
+
+.btn-nav:disabled {
+  color: var(--text-faint);
+  opacity: 0.4;
+  cursor: default;
+}
+
+#reloadBtn.spinning svg {
+  animation: tab-spin 0.7s linear infinite;
+}
+
+/* Adres çubuğu */
+.address-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 36px;
+  background: var(--bg-4);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 0 6px 0 12px;
+  gap: 8px;
+  transition: border-color 0.2s var(--ease-fast), box-shadow 0.2s var(--ease-fast), background 0.2s;
+  max-width: 880px;
+}
+
+.address-bar-container:hover {
+  border-color: var(--border-bright);
+}
+
+.address-bar-container.focused {
+  border-color: var(--gold);
+  background: #3a3024;
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.12), 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.security-indicator {
+  display: flex;
+  align-items: center;
+  color: #7fb88a;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.security-indicator.insecure { color: var(--text-faint); }
+
+.address-bar {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 13.5px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0.1px;
+  height: 100%;
+}
+
+.address-bar::placeholder { color: var(--text-faint); }
+
+.star-btn, .btn-go {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s var(--ease-fast);
+}
+
+.star-btn:hover { color: var(--gold-bright); background: rgba(212,175,55,0.12); }
+.star-btn.starred { color: var(--gold); }
+.star-btn.starred svg { fill: var(--gold); }
+
+.btn-go {
+  background: rgba(212,175,55,0.85);
+  color: #1a1612;
+}
+.btn-go:hover {
+  background: var(--gold-bright);
+  transform: scale(1.06);
+}
+.btn-go:active { transform: scale(0.94); }
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-icon:hover {
+  background: rgba(212,175,55,0.12);
+  color: var(--gold-bright);
+}
+.btn-icon.active {
+  background: rgba(212,175,55,0.18);
+  color: var(--gold);
+}
+
+/* ============================================
+   YER İMLERİ ÇUBUĞU
+   ============================================ */
+
+.bookmark-bar {
+  height: 0;
+  min-height: 0;
+  background: var(--bg-1);
+  border-bottom: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  transition: height 0.2s var(--ease), min-height 0.2s var(--ease), border-color 0.2s;
+  scrollbar-width: none;
+}
+.bookmark-bar::-webkit-scrollbar { display: none; }
+
+.bookmark-bar.has-items {
+  height: 34px;
+  min-height: 34px;
+  border-bottom-color: var(--border-dim);
+}
+
+.bookmark-bar-empty {
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.bookmark-bar.has-items .bookmark-bar-empty { display: none; }
+
+.bookmark-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 25px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: rgba(212,175,55,0.05);
+  border: 1px solid var(--border-dim);
+  color: var(--text-dim);
+  font-size: 11.5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s var(--ease-fast);
+  animation: chip-in 0.25s var(--ease);
+  position: relative;
+}
+
+@keyframes chip-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.bookmark-chip:hover {
+  background: rgba(212,175,55,0.12);
+  border-color: var(--border-bright);
+  color: var(--gold-bright);
+}
+
+.bookmark-chip .chip-favicon {
+  width: 12px; height: 12px;
+  color: var(--gold-dim);
+  flex-shrink: 0;
+}
+.bookmark-chip .chip-favicon svg { width: 100%; height: 100%; }
+
+.bookmark-chip .chip-remove {
+  width: 14px; height: 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+  opacity: 0;
+  margin-left: 2px;
+  transition: opacity 0.15s;
+}
+.bookmark-chip:hover .chip-remove { opacity: 0.6; }
+.bookmark-chip .chip-remove:hover {
+  opacity: 1 !important;
+  background: rgba(192,80,77,0.4);
+  color: #fff;
+}
+.bookmark-chip .chip-remove svg { width: 8px; height: 8px; }
+
+/* ============================================
+   BULMA ÇUBUĞU
+   ============================================ */
+
+.find-bar {
+  position: absolute;
+  top: 96px;
+  right: 16px;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 8px 0 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: find-in 0.18s var(--ease);
+}
+
+.find-bar.visible { display: flex; }
+
+@keyframes find-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.find-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 13px;
+  width: 180px;
+}
+.find-input::placeholder { color: var(--text-faint); }
+
+.find-count {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  min-width: 44px;
+  text-align: center;
+}
+
+.find-nav, .find-close {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.find-nav:hover, .find-close:hover {
+  background: rgba(212,175,55,0.14);
+  color: var(--gold-bright);
+}
+
+/* ============================================
+   WEBVIEW KONTEYNER
+   ============================================ */
+
+.webview-container {
+  flex: 1;
+  position: relative;
+  background: var(--bg-0);
+  overflow: hidden;
+}
+
+webview {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+webview.active-view { display: flex; }
+
+/* Sayfa yüklenirken üstte ince ilerleme çizgisi */
+.load-progress {
+  position: absolute;
+  top: 0; left: 0;
+  height: 2.5px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright));
+  box-shadow: 0 0 8px rgba(212,175,55,0.6);
+  z-index: 70;
+  transition: width 0.3s var(--ease-fast), opacity 0.3s;
+  border-radius: 0 2px 2px 0;
+}
+.load-progress.hidden { opacity: 0; }
+
+/* ============================================
+   DURUM ÇUBUĞU
+   ============================================ */
+
+.statusbar {
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  height: 22px;
+  padding: 0 10px;
+  background: rgba(22, 19, 16, 0.92);
+  border: 1px solid var(--border-dim);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  z-index: 65;
+  max-width: 50%;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.statusbar.visible { opacity: 1; transform: translateY(0); }
+
+#statusText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+   HAKKINDA MODAL
+   ============================================ */
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 6, 4, 0.65);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal.show {
+  display: flex;
+  animation: modal-bg-in 0.2s var(--ease);
+}
+@keyframes modal-bg-in {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+.modal-content {
+  width: 340px;
+  background: linear-gradient(160deg, #241d15 0%, #161210 100%);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px 24px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,55,0.08) inset;
+  animation: modal-pop 0.28s var(--ease);
+}
+@keyframes modal-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-crest {
+  font-size: 34px;
+  color: var(--gold);
+  text-shadow: 0 0 24px rgba(212,175,55,0.4);
+  margin-bottom: 8px;
+}
+
+.modal-content h2 {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  letter-spacing: 3px;
+  font-weight: 400;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold) 60%, var(--gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.modal-version {
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.modal-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+  margin: 14px 0;
+}
+
+.modal-content p {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.modal-meta { font-size: 12px; }
+.modal-meta strong { color: var(--text); font-weight: 600; }
+
+.modal-footer-text {
+  font-size: 10.5px !important;
+  color: var(--text-faint) !important;
+  letter-spacing: 0.5px;
+}
+
+.modal-close-btn {
+  margin-top: 20px;
+  width: 100%;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: rgba(212,175,55,0.12);
+  border: 1px solid var(--border);
+  color: var(--gold-bright);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.18s var(--ease-fast);
+}
+.modal-close-btn:hover {
+  background: rgba(212,175,55,0.2);
+  border-color: var(--border-bright);
+}
+
+/* ============================================
+   GENEL GEÇİŞLER
+   ============================================ */
+
+.toolbar, .titlebar, .bookmark-bar {
+  will-change: transform;
+}
+
+@media (max-width: 700px) {
+  .tab { min-width: 110px; }
+  .address-bar-container { max-width: none; }
+}
