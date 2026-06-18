@@ -1,0 +1,65 @@
+name: Build SHALA Browser
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: dist:win
+          - os: ubuntu-latest
+            script: dist:linux
+          - os: macos-latest
+            script: dist:mac
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Kodu çek
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Bağımlılıkları kur
+        run: npm install
+
+      - name: Build al (${{ matrix.os }})
+        run: npm run ${{ matrix.script }}
+
+      - name: Çıktıları yükle (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: shala-browser-${{ matrix.os }}
+          path: |
+            release/*.exe
+            release/*.deb
+            release/*.AppImage
+            release/*.dmg
+          if-no-files-found: ignore
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Tüm artifact'leri indir
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-files
+          merge-multiple: true
+
+      - name: GitHub Release oluştur
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-files/**/*
+          generate_release_notes: true
