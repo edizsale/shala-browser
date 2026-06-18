@@ -2,7 +2,7 @@
 // SHALA BROWSER — Renderer Logic
 // ============================================
 
-const DEFAULT_URL = 'newtab.html';
+let DEFAULT_URL = 'newtab.html';
 const STORAGE_KEY_BOOKMARKS = 'shala-bookmarks';
 const STORAGE_KEY_SESSION = 'shala-session-tabs';
 
@@ -746,6 +746,24 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   } catch (e) {
     // getPlatform desteklenmiyorsa varsayılan (macOS/Linux) görünüm kalır
+  }
+
+  // newtab.html'i mutlak file:// yoluna çeviriyoruz — webview'lar göreli
+  // yolları kendi konumlarına göre çözebildiği için, bazı durumlarda
+  // (örn. paketlenmiş build) içindeki assets/ referansları (bayrak görseli
+  // gibi) yanlış konumdan aranabiliyordu. Mutlak yol bu sorunu kökten çözer.
+  try {
+    const appPath = await window.electronAPI.getAppPath();
+    if (appPath) {
+      // Windows ters slash → ileri slash
+      const normalized = appPath.replace(/\\/g, '/');
+      // Başında / varsa (Linux/Mac: /home/...) tek bir file:// öneki yeter.
+      // Yoksa (Windows: C:/...) bir slash daha eklememiz gerekir.
+      const prefix = normalized.startsWith('/') ? 'file://' : 'file:///';
+      DEFAULT_URL = `${prefix}${normalized}/newtab.html`;
+    }
+  } catch (e) {
+    // getAppPath desteklenmiyorsa göreli 'newtab.html' yolu kullanılır
   }
 
   const restored = tabManager.restoreSession();

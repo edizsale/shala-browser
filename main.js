@@ -62,9 +62,16 @@ function createWindow() {
     }
   });
 
-  // Her <webview> için native popup pencerelerini engelle —
-  // bunun yerine ana pencereye mesaj gönderip kendi sekme sistemimizde açıyoruz
+  // Her webview için: F12 ile kendi DevTools'unu açabilme + popup engelleme
   mainWindow.webContents.on('did-attach-webview', (event, webContents) => {
+    webContents.on('before-input-event', (e, input) => {
+      if (input.key === 'F12') {
+        webContents.toggleDevTools();
+      }
+    });
+
+    // Native popup pencerelerini engelle — bunun yerine ana pencereye
+    // mesaj gönderip kendi sekme sistemimizde açıyoruz
     webContents.setWindowOpenHandler(({ url }) => {
       mainWindow.webContents.send('open-url-in-new-tab', url);
       return { action: 'deny' };
@@ -98,3 +105,4 @@ ipcMain.on('window-close', () => mainWindow.close());
 
 ipcMain.handle('window-is-maximized', () => mainWindow.isMaximized());
 ipcMain.handle('get-platform', () => process.platform);
+ipcMain.handle('get-app-path', () => __dirname);
