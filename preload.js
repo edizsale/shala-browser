@@ -9,6 +9,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPlatform: () => ipcRenderer.invoke('get-platform'),
   getAppPath: () => ipcRenderer.invoke('get-app-path'),
 
+  // Sekme sağ-tık menüsü
+  showTabContextMenu: (tabId) => ipcRenderer.send('show-tab-context-menu', tabId),
+  onTabContextMenuAction: (callback) => ipcRenderer.on('tab-context-menu-action', (e, action, tabId) => callback(action, tabId)),
+
   // Pencere durumu
   onWindowStateChanged: (callback) => ipcRenderer.on('window-state-changed', (e, state) => callback(state)),
   onWindowFocusChanged: (callback) => ipcRenderer.on('window-focus-changed', (e, focused) => callback(focused)),

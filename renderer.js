@@ -77,7 +77,7 @@ class Tab {
     this.tabEl.innerHTML = `
       <span class="tab-favicon">${ICONS.globe}</span>
       <span class="tab-title">Yeni Sekme</span>
-      <span class="tab-close" title="Sekmeyi kapat">${ICONS.close}</span>
+      <span class="tab-close" data-tooltip="Sekmeyi kapat">${ICONS.close}</span>
     `;
     this.tabEl.addEventListener('click', (e) => {
       if (e.target.closest('.tab-close')) {
@@ -85,6 +85,11 @@ class Tab {
       } else {
         tabManager.activateTab(this.id);
       }
+    });
+    this.tabEl.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      tabManager.activateTab(this.id);
+      window.electronAPI.showTabContextMenu(this.id);
     });
     tabStrip.appendChild(this.tabEl);
 
@@ -207,7 +212,7 @@ class Tab {
   _updateTabTitle() {
     const titleEl = this.tabEl.querySelector('.tab-title');
     titleEl.textContent = this.title;
-    titleEl.title = this.title;
+    titleEl.setAttribute('data-tooltip', this.title);
   }
 
   isActive() {
@@ -290,6 +295,25 @@ class TabManager {
       this.activateTab(newIds[newIdx]);
     }
     this.saveSession();
+  }
+
+  closeOthers(keepId) {
+    const idsToClose = Array.from(this.tabs.keys()).filter(id => id !== keepId);
+    idsToClose.forEach(id => this.closeTab(id));
+  }
+
+  closeToRight(fromId) {
+    const ids = Array.from(this.tabs.keys());
+    const idx = ids.indexOf(fromId);
+    if (idx === -1) return;
+    const idsToClose = ids.slice(idx + 1);
+    idsToClose.forEach(id => this.closeTab(id));
+  }
+
+  duplicateTab(id) {
+    const tab = this.tabs.get(id);
+    if (!tab) return;
+    this.createTab(tab.url, true);
   }
 
   getActiveTab() {
@@ -392,7 +416,7 @@ class BookmarkManager {
     this.bookmarks.forEach(bm => {
       const chip = document.createElement('div');
       chip.className = 'bookmark-chip';
-      chip.title = bm.url;
+      chip.setAttribute('data-tooltip', bm.url);
 
       const faviconSpan = document.createElement('span');
       faviconSpan.className = 'chip-favicon';
@@ -698,6 +722,31 @@ window.electronAPI.onMenuReload(() => reloadBtn.click());
 window.electronAPI.onMenuFindInPage(() => openFindBar());
 window.electronAPI.onOpenUrlInNewTab((url) => {
   tabManager.createTab(url, true);
+});
+
+window.electronAPI.onTabContextMenuAction((action, tabId) => {
+  switch (action) {
+    case 'new-tab':
+      tabManager.createTab();
+      break;
+    case 'reload': {
+      const tab = tabManager.tabs.get(tabId);
+      if (tab) tab.webview.reload();
+      break;
+    }
+    case 'duplicate':
+      tabManager.duplicateTab(tabId);
+      break;
+    case 'close':
+      tabManager.closeTab(tabId);
+      break;
+    case 'close-others':
+      tabManager.closeOthers(tabId);
+      break;
+    case 'close-to-right':
+      tabManager.closeToRight(tabId);
+      break;
+  }
 });
 window.electronAPI.onWindowFocusChanged((focused) => {
   document.body.classList.toggle('window-blurred', !focused);

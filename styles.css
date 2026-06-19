@@ -100,16 +100,16 @@ body {
   gap: 6px;
   min-width: 110px;
   max-width: 180px;
+  flex: 1 1 180px;
   height: 30px;
   margin: 5px 2px 0 0;
   padding: 0 6px 0 10px;
   border-radius: 8px 8px 0 0;
   background: transparent;
   color: var(--text-dim);
-  cursor: pointer;
+  cursor: default;
   position: relative;
   transition: background 0.18s var(--ease-fast), color 0.18s var(--ease-fast);
-  flex-shrink: 0;
 }
 
 .tab:hover {
@@ -198,7 +198,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   flex-shrink: 0;
   -webkit-app-region: no-drag;
   transition: background 0.15s, color 0.15s;
@@ -232,7 +232,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   position: relative;
   transition: filter 0.12s var(--ease-fast), transform 0.12s var(--ease-fast);
 }
@@ -297,7 +297,7 @@ body.platform-win32 .wc-win { display: flex; }
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   -webkit-app-region: no-drag;
   transition: background 0.12s var(--ease-fast), color 0.12s var(--ease-fast);
 }
@@ -346,6 +346,7 @@ body.window-blurred .wc-win.window-controls .winbtn {
   gap: 10px;
   position: relative;
   z-index: 40;
+  -webkit-app-region: no-drag;
 }
 
 .nav-buttons {
@@ -365,7 +366,8 @@ body.window-blurred .wc-win.window-controls .winbtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
+  -webkit-app-region: no-drag;
   transition: background 0.15s var(--ease-fast), color 0.15s, transform 0.12s;
 }
 
@@ -401,7 +403,6 @@ body.window-blurred .wc-win.window-controls .winbtn {
   padding: 0 6px 0 12px;
   gap: 8px;
   transition: border-color 0.2s var(--ease-fast), box-shadow 0.2s var(--ease-fast), background 0.2s;
-  max-width: 880px;
 }
 
 .address-bar-container:hover {
@@ -448,7 +449,7 @@ body.window-blurred .wc-win.window-controls .winbtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   flex-shrink: 0;
   transition: all 0.15s var(--ease-fast);
 }
@@ -484,7 +485,7 @@ body.window-blurred .wc-win.window-controls .winbtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   transition: background 0.15s, color 0.15s;
 }
 .btn-icon:hover {
@@ -543,7 +544,7 @@ body.window-blurred .wc-win.window-controls .winbtn {
   border: 1px solid var(--border-dim);
   color: var(--text-dim);
   font-size: 11.5px;
-  cursor: pointer;
+  cursor: default;
   flex-shrink: 0;
   transition: all 0.15s var(--ease-fast);
   animation: chip-in 0.25s var(--ease);
@@ -636,7 +637,7 @@ body.window-blurred .wc-win.window-controls .winbtn {
   border: none;
   color: var(--text-dim);
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
+  cursor: default;
   transition: background 0.15s, color 0.15s;
 }
 .find-nav:hover, .find-close:hover {
@@ -810,7 +811,7 @@ webview.active-view { display: flex; }
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  cursor: pointer;
+  cursor: default;
   transition: all 0.18s var(--ease-fast);
 }
 .modal-close-btn:hover {
@@ -829,4 +830,57 @@ webview.active-view { display: flex; }
 @media (max-width: 700px) {
   .tab { min-width: 110px; }
   .address-bar-container { max-width: none; }
+}
+
+/* ============================================
+   ÖZEL TOOLTIP SİSTEMİ
+   Chromium'un native title-tooltip'i yerine, Chrome'un
+   kendi sade/küçük tooltip görünümüne yakın bir tasarım.
+   [data-tooltip] attribute'u olan her elemana uygulanır.
+   ============================================ */
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-3px);
+  background: #1c1a17;
+  color: #e8e2d4;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0.1px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(212,175,55,0.18);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 200;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 0.45s;
+}
+
+/* Titlebar'daki elemanlar (örn. yeni sekme +) için tooltip aşağı değil,
+   biraz daha aşağıda kalsın ki sekme şeridinin üstüne binmesin */
+.titlebar [data-tooltip]::after {
+  top: calc(100% + 4px);
+}
+
+/* Disabled butonlarda tooltip gösterme (geri/ileri devre dışıyken) */
+[data-tooltip]:disabled::after {
+  display: none;
 }
