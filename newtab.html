@@ -246,5 +246,10 @@
 
     <div class="footer-rule">SHALA BROWSER · DARDANIA KINGDOM RESMİ TARAYICISI</div>
   </div>
+ <script>
+  const flagImg = document.getElementById('flagImg');
+  // Mutlak file:// path kullan
+  flagImg.src = `file://${window.location.pathname.replace(/newtab\.html.*/, '')}assets/dardania-flag.png`;
+</script>
 </body>
 </html>
