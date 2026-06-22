@@ -517,8 +517,8 @@ function hideProgress() {
 function updateNavButtons() {
   const tab = tabManager.getActiveTab();
   if (!tab) return;
-  backBtn.disabled = !tab.webview.canGoBack || !tab.webview.canGoBack();
-  forwardBtn.disabled = !tab.webview.canGoForward || !tab.webview.canGoForward();
+  backBtn.disabled = !tab.webview.canGoBack();
+  forwardBtn.disabled = !tab.webview.canGoForward();
 }
 
 function updateAddressBar() {
