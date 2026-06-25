@@ -263,6 +263,7 @@ ipcMain.handle('get-search-suggestions', async (event, query) => {
 
     const req = https.get(url, { timeout: 3000 }, (res) => {
       let data = '';
+      res.setEncoding('utf8');
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
         try {

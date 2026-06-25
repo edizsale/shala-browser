@@ -1,7 +1,7 @@
 {
   "name": "shala-browser",
   "productName": "SHALA Browser",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "SHALA Browser - Dardania Kingdom Royal Web Browser",
   "main": "main.js",
   "scripts": {

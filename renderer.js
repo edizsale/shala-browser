@@ -5,6 +5,7 @@
 let DEFAULT_URL = 'newtab.html';
 const STORAGE_KEY_BOOKMARKS = 'shala-bookmarks';
 const STORAGE_KEY_SESSION = 'shala-session-tabs';
+const STORAGE_KEY_HISTORY = 'shala-history';
 
 // ----- DOM refs -----
 const tabStrip = document.getElementById('tabStrip');
@@ -40,6 +41,13 @@ const maximizeBtnWin = document.getElementById('maximizeBtnWin');
 const closeBtnWin = document.getElementById('closeBtnWin');
 const aboutModal = document.getElementById('aboutModal');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
+const historyBtn = document.getElementById('historyBtn');
+const historyPanel = document.getElementById('historyPanel');
+const historyCloseBtn = document.getElementById('historyCloseBtn');
+const historyClearBtn = document.getElementById('historyClearBtn');
+const historySearch = document.getElementById('historySearch');
+const historySearchClear = document.getElementById('historySearchClear');
+const historyList = document.getElementById('historyList');
 
 // ============================================
 // ICONS (reused SVG strings)
@@ -156,6 +164,7 @@ class Tab {
       this.title = e.title || this.url;
       this._updateTabTitle();
       if (this.isActive()) document.title = `${this.title} — SHALA Browser`;
+      historyManager.add(this.url, this.title, this.favicon);
     });
 
     wv.addEventListener('page-favicon-updated', (e) => {
@@ -473,6 +482,197 @@ class BookmarkManager {
 }
 
 const bookmarkManager = new BookmarkManager();
+
+// ============================================
+// HISTORY MANAGER
+// ============================================
+class HistoryManager {
+  constructor() {
+    this.items = this._load();
+  }
+
+  _load() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  _save() {
+    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(this.items));
+  }
+
+  add(url, title, favicon) {
+    if (!url || url.includes('newtab.html') || url.startsWith('file://')) return;
+    this.items = this.items.filter(i => i.url !== url);
+    this.items.unshift({ url, title: title || url, favicon: favicon || null, ts: Date.now() });
+    if (this.items.length > 500) this.items = this.items.slice(0, 500);
+    this._save();
+  }
+
+  remove(url) {
+    this.items = this.items.filter(i => i.url !== url);
+    this._save();
+  }
+
+  clear() {
+    this.items = [];
+    this._save();
+  }
+
+  search(query) {
+    const q = query.toLowerCase();
+    return this.items.filter(i =>
+      i.title.toLowerCase().includes(q) || i.url.toLowerCase().includes(q)
+    );
+  }
+}
+
+const historyManager = new HistoryManager();
+
+// ============================================
+// HISTORY PANEL
+// ============================================
+function formatHistoryTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatHistoryGroupLabel(ts) {
+  const now = new Date();
+  const d = new Date(ts);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today - 86400000);
+  const itemDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  if (itemDay.getTime() === today.getTime()) return 'Bugün';
+  if (itemDay.getTime() === yesterday.getTime()) return 'Dün';
+
+  const diffDays = Math.floor((today - itemDay) / 86400000);
+  if (diffDays < 7) {
+    return d.toLocaleDateString('tr-TR', { weekday: 'long' });
+  }
+  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function renderHistoryPanel(items) {
+  historyList.innerHTML = '';
+
+  if (items.length === 0) {
+    historyList.innerHTML = `
+      <div class="history-empty">
+        <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+        Henüz ziyaret edilen site yok
+      </div>`;
+    return;
+  }
+
+  let lastLabel = null;
+  items.forEach(item => {
+    const label = formatHistoryGroupLabel(item.ts);
+    if (label !== lastLabel) {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'history-group-label';
+      groupEl.textContent = label;
+      historyList.appendChild(groupEl);
+      lastLabel = label;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'history-item';
+
+    const faviconEl = document.createElement('div');
+    faviconEl.className = 'history-item-favicon';
+    if (item.favicon) {
+      const img = document.createElement('img');
+      img.src = item.favicon;
+      img.addEventListener('error', () => { faviconEl.innerHTML = ICONS.globe; });
+      faviconEl.appendChild(img);
+    } else {
+      faviconEl.innerHTML = ICONS.globe;
+    }
+
+    const infoEl = document.createElement('div');
+    infoEl.className = 'history-item-info';
+    const titleEl = document.createElement('div');
+    titleEl.className = 'history-item-title';
+    titleEl.textContent = item.title;
+    const urlEl = document.createElement('div');
+    urlEl.className = 'history-item-url';
+    urlEl.textContent = item.url;
+    infoEl.appendChild(titleEl);
+    infoEl.appendChild(urlEl);
+
+    const timeEl = document.createElement('div');
+    timeEl.className = 'history-item-time';
+    timeEl.textContent = formatHistoryTime(item.ts);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'history-item-del';
+    delBtn.title = 'Kaldır';
+    delBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>`;
+
+    el.appendChild(faviconEl);
+    el.appendChild(infoEl);
+    el.appendChild(timeEl);
+    el.appendChild(delBtn);
+
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.history-item-del')) {
+        historyManager.remove(item.url);
+        el.remove();
+        return;
+      }
+      const tab = tabManager.getActiveTab();
+      if (tab) {
+        tab.navigate(item.url);
+        closeHistoryPanel();
+      }
+    });
+
+    historyList.appendChild(el);
+  });
+}
+
+function openHistoryPanel() {
+  historyPanel.classList.add('visible');
+  historyBtn.classList.add('active');
+  historySearch.value = '';
+  historySearchClear.style.display = 'none';
+  renderHistoryPanel(historyManager.items);
+  historySearch.focus();
+}
+
+function closeHistoryPanel() {
+  historyPanel.classList.remove('visible');
+  historyBtn.classList.remove('active');
+}
+
+historyBtn.addEventListener('click', () => {
+  if (historyPanel.classList.contains('visible')) closeHistoryPanel();
+  else openHistoryPanel();
+});
+
+historyCloseBtn.addEventListener('click', closeHistoryPanel);
+
+historyClearBtn.addEventListener('click', () => {
+  historyManager.clear();
+  renderHistoryPanel([]);
+});
+
+historySearch.addEventListener('input', () => {
+  const q = historySearch.value.trim();
+  historySearchClear.style.display = q ? 'flex' : 'none';
+  renderHistoryPanel(q ? historyManager.search(q) : historyManager.items);
+});
+
+historySearchClear.addEventListener('click', () => {
+  historySearch.value = '';
+  historySearchClear.style.display = 'none';
+  renderHistoryPanel(historyManager.items);
+  historySearch.focus();
+});
 
 // ============================================
 // HELPERS
@@ -823,6 +1023,9 @@ document.addEventListener('keydown', (e) => {
   } else if (mod && e.key.toLowerCase() === 'r') {
     e.preventDefault();
     reloadBtn.click();
+  } else if (mod && e.shiftKey && e.key.toLowerCase() === 'h') {
+    e.preventDefault();
+    historyBtn.click();
   } else if (mod && e.key.toLowerCase() === 'h') {
     e.preventDefault();
     homeBtn.click();

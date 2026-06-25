@@ -90,6 +90,9 @@
       <button id="findBtn" class="btn-icon" data-tooltip="Sayfada Bul (Ctrl+F)">
         <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
+      <button id="historyBtn" class="btn-icon" data-tooltip="Geçmiş (Ctrl+Shift+H)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+      </button>
       <button id="aboutBtn" class="btn-icon" data-tooltip="SHALA Browser Hakkında">
         <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
@@ -122,6 +125,30 @@
   <!-- WEBVIEW KONTEYNER -->
   <div class="webview-container" id="webviewContainer">
     <!-- Webview'lar dinamik olarak buraya eklenecek -->
+
+    <!-- GEÇMİŞ PANELİ -->
+    <div id="historyPanel" class="history-panel">
+      <div class="history-header">
+        <span class="history-header-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+        </span>
+        <h2 class="history-title">Geçmiş</h2>
+        <div class="history-header-actions">
+          <button id="historyClearBtn" class="history-clear-btn">Tümünü Temizle</button>
+          <button id="historyCloseBtn" class="history-close-btn" data-tooltip="Kapat">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="history-search-wrap">
+        <svg class="history-search-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="historySearch" class="history-search" placeholder="Geçmişte ara…" autocomplete="off" spellcheck="false">
+        <button id="historySearchClear" class="history-search-x" style="display:none">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+        </button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </div>
   </div>
 
   <!-- DURUM ÇUBUĞU -->
@@ -134,13 +161,18 @@
     <div class="modal-content">
       <div class="modal-crest">⚜</div>
       <h2>SHALA Browser</h2>
-      <p class="modal-version">Sürüm 2.0 — Dardania Royal Edition</p>
+      <p class="modal-version">Sürüm 2.0.1 — Dardania Royal Edition</p>
       <div class="modal-divider"></div>
-      <p>Dardania Krallığı'nın resmi web tarayıcısı.</p>
+      <p>Dardania Krallığı'nın resmî web tarayıcısı.</p>
       <p class="modal-meta"><strong>Motor:</strong> Chromium · Electron</p>
-      <p class="modal-meta"><strong>Tasarım:</strong> Shala</p>
+      <p class="modal-meta"><strong>Geliştirici:</strong> Ediz Shala</p>
+      <p class="modal-meta"><strong>Lisans:</strong> MIT</p>
       <div class="modal-divider"></div>
-      <p class="modal-footer-text">Kurulmuş: 2025 · Krallık Tarihi: 1000. Yıl</p>
+      <p class="modal-meta"><strong>v2.0.1 Yenilikleri:</strong></p>
+      <p class="modal-changelog">— Geçmiş paneli (Ctrl+Shift+H)</p>
+      <p class="modal-changelog">— Arama önerilerinde özel harf düzeltmesi</p>
+      <div class="modal-divider"></div>
+      <p class="modal-footer-text">© 2025–2026 Dardania Krallığı</p>
       <button class="modal-close-btn" id="modalCloseBtn">Kapat</button>
     </div>
   </div>
