@@ -37,6 +37,7 @@
       "index.html",
       "newtab.html",
       "styles.css",
+      "assets/**/*",
       "!build/install-desktop-entry.sh"
     ],
     "win": {
