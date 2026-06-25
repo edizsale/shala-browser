@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu, ipcMain, session } = require('electron');
 const path = require('path');
+const https = require('https');
 
 let mainWindow;
 
@@ -245,4 +246,39 @@ ipcMain.on('show-tab-context-menu', (event, tabId) => {
     }
   ]);
   menu.popup();
+});
+
+// ===== IPC: Google arama önerileri =====
+// Google'ın "complete/search" uç noktası, Chrome/Firefox'un da kullandığı
+// resmi olmayan ama herkese açık autocomplete servisidir. client=firefox
+// parametresi düz JSON dizisi döndürür: ["sorgu", ["öneri1", "öneri2", ...]]
+// CORS kısıtlaması renderer'da sorun çıkarabileceği için istek burada
+// (main process) yapılıp sonuç renderer'a iletilir.
+ipcMain.handle('get-search-suggestions', async (event, query) => {
+  if (!query || !query.trim()) return [];
+
+  return new Promise((resolve) => {
+    const encoded = encodeURIComponent(query.trim());
+    const url = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encoded}`;
+
+    const req = https.get(url, { timeout: 3000 }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          // parsed[1] öneri dizisi
+          resolve(Array.isArray(parsed) && Array.isArray(parsed[1]) ? parsed[1] : []);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    });
+
+    req.on('error', () => resolve([]));
+    req.on('timeout', () => {
+      req.destroy();
+      resolve([]);
+    });
+  });
 });

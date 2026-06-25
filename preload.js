@@ -26,6 +26,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onMenuFindInPage: (callback) => ipcRenderer.on('menu-find-in-page', callback),
   onOpenUrlInNewTab: (callback) => ipcRenderer.on('open-url-in-new-tab', (e, url) => callback(url)),
 
+  // Arama önerileri
+  getSearchSuggestions: (query) => ipcRenderer.invoke('get-search-suggestions', query),
+
   // Zoom
   onZoomIn: (callback) => ipcRenderer.on('zoom-in', callback),
   onZoomOut: (callback) => ipcRenderer.on('zoom-out', callback),

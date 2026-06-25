@@ -21,6 +21,7 @@ const starBtn = document.getElementById('starBtn');
 const findBtn = document.getElementById('findBtn');
 const aboutBtn = document.getElementById('aboutBtn');
 const securityIndicator = document.getElementById('securityIndicator');
+const suggestionsDropdown = document.getElementById('suggestionsDropdown');
 const statusbar = document.getElementById('statusbar');
 const statusText = document.getElementById('statusText');
 const bookmarkBar = document.getElementById('bookmarkBar');
@@ -90,6 +91,18 @@ class Tab {
       e.preventDefault();
       tabManager.activateTab(this.id);
       window.electronAPI.showTabContextMenu(this.id);
+    });
+    // Orta tık (mouse wheel click) ile sekmeyi kapat — Chrome'daki standart
+    // davranış. mousedown'da preventDefault, tarayıcının varsayılan
+    // "autoscroll" moduna girmesini en başından engeller.
+    this.tabEl.addEventListener('mousedown', (e) => {
+      if (e.button === 1) e.preventDefault();
+    });
+    this.tabEl.addEventListener('auxclick', (e) => {
+      if (e.button === 1) {
+        e.preventDefault();
+        tabManager.closeTab(this.id);
+      }
     });
     tabStrip.appendChild(this.tabEl);
 
@@ -574,12 +587,132 @@ homeBtn.addEventListener('click', () => {
 });
 
 goBtn.addEventListener('click', navigateFromAddressBar);
-addressBar.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') navigateFromAddressBar();
-  if (e.key === 'Escape') {
-    updateAddressBar();
-    addressBar.blur();
+
+// ============================================
+// ARAMA ÖNERİLERİ (Google autocomplete)
+// ============================================
+let suggestionTimer = null;
+let currentSuggestions = [];
+let highlightedIndex = -1;
+
+function positionSuggestionsDropdown() {
+  const rect = addressBarContainer.getBoundingClientRect();
+  suggestionsDropdown.style.left = `${rect.left}px`;
+  suggestionsDropdown.style.top = `${rect.bottom + 4}px`;
+  suggestionsDropdown.style.width = `${rect.width}px`;
+}
+
+function renderSuggestions(items) {
+  currentSuggestions = items;
+  highlightedIndex = -1;
+  suggestionsDropdown.innerHTML = '';
+
+  if (items.length === 0) {
+    hideSuggestions();
+    return;
   }
+
+  items.forEach((text, i) => {
+    const el = document.createElement('div');
+    el.className = 'suggestion-item';
+    el.dataset.index = i;
+    el.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+      <span class="suggestion-text"></span>
+    `;
+    el.querySelector('.suggestion-text').textContent = text;
+    el.addEventListener('mousedown', (e) => {
+      // mousedown (blur'dan önce) kullanıyoruz ki addressBar'ın
+      // 'blur' event'i dropdown'ı tıklamadan önce kapatmasın
+      e.preventDefault();
+      selectSuggestion(text);
+    });
+    el.addEventListener('mouseenter', () => setHighlighted(i));
+    suggestionsDropdown.appendChild(el);
+  });
+
+  positionSuggestionsDropdown();
+  suggestionsDropdown.classList.add('visible');
+}
+
+function setHighlighted(index) {
+  const items = suggestionsDropdown.querySelectorAll('.suggestion-item');
+  items.forEach((el, i) => el.classList.toggle('highlighted', i === index));
+  highlightedIndex = index;
+}
+
+function selectSuggestion(text) {
+  addressBar.value = text;
+  hideSuggestions();
+  navigateFromAddressBar();
+}
+
+function hideSuggestions() {
+  suggestionsDropdown.classList.remove('visible');
+  suggestionsDropdown.innerHTML = '';
+  currentSuggestions = [];
+  highlightedIndex = -1;
+}
+
+addressBar.addEventListener('input', () => {
+  const query = addressBar.value.trim();
+  clearTimeout(suggestionTimer);
+
+  if (!query) {
+    hideSuggestions();
+    return;
+  }
+
+  // 150ms debounce — her tuş vuruşunda istek atmamak için
+  suggestionTimer = setTimeout(async () => {
+    try {
+      const suggestions = await window.electronAPI.getSearchSuggestions(query);
+      // Kullanıcı yazmaya devam ettiyse (input değiştiyse) eski sonucu görmezden gel
+      if (addressBar.value.trim() === query) {
+        renderSuggestions(suggestions.slice(0, 8));
+      }
+    } catch (e) {
+      hideSuggestions();
+    }
+  }, 150);
+});
+
+addressBar.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (highlightedIndex >= 0 && currentSuggestions[highlightedIndex]) {
+      selectSuggestion(currentSuggestions[highlightedIndex]);
+    } else {
+      hideSuggestions();
+      navigateFromAddressBar();
+    }
+    return;
+  }
+  if (e.key === 'Escape') {
+    if (suggestionsDropdown.classList.contains('visible')) {
+      hideSuggestions();
+    } else {
+      updateAddressBar();
+      addressBar.blur();
+    }
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    if (currentSuggestions.length === 0) return;
+    e.preventDefault();
+    setHighlighted((highlightedIndex + 1) % currentSuggestions.length);
+    return;
+  }
+  if (e.key === 'ArrowUp') {
+    if (currentSuggestions.length === 0) return;
+    e.preventDefault();
+    setHighlighted((highlightedIndex - 1 + currentSuggestions.length) % currentSuggestions.length);
+    return;
+  }
+});
+
+window.addEventListener('resize', () => {
+  if (suggestionsDropdown.classList.contains('visible')) positionSuggestionsDropdown();
 });
 
 addressBar.addEventListener('focus', () => {
@@ -588,6 +721,7 @@ addressBar.addEventListener('focus', () => {
 });
 addressBar.addEventListener('blur', () => {
   addressBarContainer.classList.remove('focused');
+  hideSuggestions();
 });
 
 function navigateFromAddressBar() {
